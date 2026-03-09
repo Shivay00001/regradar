@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+test_backend_output.txt

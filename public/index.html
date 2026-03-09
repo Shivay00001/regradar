@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegRadar — India Compliance Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#070b12;--bg2:#090d16;--bg3:#0d1420;--bg4:#0a1020;
+    --border:#111827;--border2:#1a2234;--border3:#1e293b;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--text4:#475569;--text5:#334155;
+    --gold:#f59e0b;--gold2:#d97706;--gold3:#b45309;
+    --red:#ef4444;--green:#22c55e;--blue:#60a5fa;--purple:#a78bfa;--teal:#34d399;--orange:#f97316;--pink:#fb7185;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border3)}
+  button{cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
+  input{font-family:'DM Mono',monospace}
+  input:focus{outline:none}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* HEADER */
+  #header{height:50px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:var(--bg);flex-shrink:0}
+  .logo-icon{width:24px;height:24px;background:linear-gradient(135deg,var(--gold),var(--gold3));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+  .logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:-.02em}
+  .logo-sub{font-size:10px;color:var(--border3);letter-spacing:.08em}
+  .status-dot{width:6px;height:6px;border-radius:50%;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+
+  /* SCAN BAR */
+  #scanbar{border-bottom:1px solid var(--border);padding:9px 18px;background:var(--bg2);display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
+  .fb{font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid var(--border3);background:transparent;color:var(--text4)}
+  .fb:hover{border-color:var(--text5);color:var(--text2)}
+  .fb.on{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.08)}
+  .scan-btn{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.4);padding:6px 16px;border-radius:6px;font-size:11px;margin-left:auto}
+  .scan-btn:hover{background:rgba(245,158,11,.25)}
+  .scan-btn:disabled{background:rgba(245,158,11,.05);color:#78350f;border-color:#78350f44;cursor:not-allowed}
+
+  /* STATUS BARS */
+  .status-bar{padding:7px 18px;font-size:12px;border-bottom:1px solid;flex-shrink:0;display:flex;justify-content:space-between;align-items:center}
+  .progress-bar{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2);color:var(--gold2)}
+  .error-bar{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:var(--red)}
+  .close-btn{background:none;border:none;color:var(--text3);font-size:14px;padding:0 4px}
+
+  /* LAYOUT */
+  #main{flex:1;display:flex;overflow:hidden}
+
+  /* LEFT PANEL */
+  #left{width:370px;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+  #filters{padding:9px 11px;border-bottom:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap}
+  #list{flex:1;overflow-y:auto;padding:9px}
+
+  .reg-card{border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:7px;cursor:pointer;transition:all .15s;position:relative}
+  .reg-card:hover{border-color:var(--border3)!important;background:rgba(30,41,59,.6)!important}
+  .reg-card.active{border-color:var(--gold)!important;background:rgba(245,158,11,.05)!important}
+  .reg-card.unread{background:rgba(245,158,11,.03)}
+  .unread-dot{position:absolute;top:12px;right:12px;width:6px;height:6px;border-radius:50%;background:var(--gold)}
+  .card-source{font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;border:1px solid;display:inline-block}
+  .card-impact{font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid;display:inline-block}
+  .card-date{font-size:9px;color:var(--text5);margin-left:auto}
+  .card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#f1f5f9;line-height:1.35;margin:7px 0 6px}
+  .card-summary{font-size:11px;color:var(--text3);line-height:1.5}
+  .card-url{font-size:10px;color:#2563eb;margin-top:5px}
+
+  /* SHIMMER */
+  .shimmer{background:linear-gradient(90deg,#1e293b 25%,#253347 50%,#1e293b 75%);background-size:200% 100%;animation:sh 1.5s infinite;border-radius:3px}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .skel{border:1px solid var(--border2);border-radius:8px;padding:13px;margin-bottom:8px}
+
+  /* AUDIT */
+  #audit{border-top:1px solid var(--border);padding:9px 12px;max-height:120px;overflow-y:auto}
+  .audit-label{font-size:9px;color:var(--border3);letter-spacing:.1em;margin-bottom:7px}
+  .audit-item{display:flex;gap:8px;margin-bottom:4px}
+  .audit-time{font-size:10px;color:var(--text5);flex-shrink:0}
+  .audit-action{font-size:10px;color:var(--text4)}
+
+  /* RIGHT PANEL */
+  #right{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  #tabs{border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;flex-shrink:0}
+  .tab{background:none;border:none;font-size:11px;padding:10px 16px;color:var(--text4);border-bottom:2px solid transparent}
+  .tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+  #official-link{margin-left:auto;font-size:10px;color:var(--blue)}
+
+  /* ANALYSIS PANEL */
+  #analysis-panel{flex:1;overflow-y:auto;padding:22px 26px}
+  .reg-header{margin-bottom:18px}
+  .badge-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px;align-items:center}
+  .badge{font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid;font-weight:600}
+  .reg-title{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;color:#f8fafc;line-height:1.3;margin-bottom:8px}
+  .sector-tags{display:flex;gap:5px;flex-wrap:wrap}
+  .sector-tag{font-size:10px;color:var(--text4);border:1px solid var(--border2);padding:2px 7px;border-radius:3px}
+
+  .quick-facts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px}
+  .fact-card{background:var(--bg3);border-radius:7px;padding:11px;border:1px solid}
+  .fact-label{font-size:9px;letter-spacing:.1em;margin-bottom:5px}
+  .fact-value{font-size:11px;color:var(--text2);line-height:1.5}
+
+  .ai-box{background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:18px}
+  .ai-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .ai-badge{width:16px;height:16px;background:linear-gradient(135deg,var(--gold),var(--gold3));border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#000}
+  .ai-title{font-size:10px;color:var(--gold);letter-spacing:.1em}
+  .spin{animation:spin 1.2s linear infinite;margin-left:auto;font-size:14px;color:var(--gold)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .analysis-section-head{color:var(--gold);font-size:10px;letter-spacing:.12em;margin-top:16px;margin-bottom:6px;text-transform:uppercase;font-family:monospace;font-weight:600}
+  .analysis-bullet{color:#cbd5e1;font-size:13px;line-height:1.7;padding-left:12px;border-left:2px solid var(--border3);margin-bottom:4px}
+  .analysis-text{color:var(--text);font-size:13px;line-height:1.7;margin-bottom:3px}
+
+  /* CHAT PANEL */
+  #chat-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  #chat-messages{flex:1;overflow-y:auto;padding:14px 18px}
+  .chat-empty{color:var(--text5);font-size:12px;text-align:center;margin-top:32px}
+  .chat-empty-icon{font-size:22px;margin-bottom:8px}
+  .chat-suggestions{display:flex;flex-direction:column;gap:7px;align-items:center;margin-top:16px}
+  .chat-suggestion{font-size:11px;background:transparent;border:1px solid var(--border3);color:var(--text4);padding:6px 14px;border-radius:4px}
+  .chat-suggestion:hover{border-color:var(--text5);color:var(--text2)}
+
+  .chat-msg{margin-bottom:14px;display:flex;animation:ci .2s ease-out}
+  .chat-msg.user{justify-content:flex-end}
+  .chat-msg.bot{justify-content:flex-start}
+  @keyframes ci{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .chat-bubble{max-width:82%;padding:10px 14px;font-size:13px;line-height:1.6;color:var(--text)}
+  .chat-bubble.user{background:rgba(245,158,11,.13);border:1px solid rgba(245,158,11,.25);border-radius:12px 12px 3px 12px}
+  .chat-bubble.bot{background:var(--bg3);border:1px solid var(--border2);border-radius:12px 12px 12px 3px}
+  .bot-label{font-size:9px;color:var(--gold);margin-bottom:5px;letter-spacing:.1em}
+  .typing{display:flex;gap:4px;padding:8px 0}
+  .typing-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+
+  #chat-input-row{border-top:1px solid var(--border);padding:11px 14px;display:flex;gap:8px}
+  #chat-input{flex:1;background:var(--bg3);border:1px solid var(--border3);border-radius:6px;padding:9px 13px;color:var(--text);font-size:13px}
+  #chat-input:focus{border-color:rgba(245,158,11,.4)}
+  .send-btn{background:rgba(245,158,11,.18);color:var(--gold);border:1px solid rgba(245,158,11,.4);padding:9px 14px;border-radius:6px;font-size:13px}
+  .send-btn:disabled{background:var(--bg3);color:var(--text5);border-color:var(--border2)}
+
+  /* EMPTY STATE */
+  #empty-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+  /* BADGE COLORS */
+  .src-rbi{color:#60a5fa;border-color:#60a5fa33;background:#60a5fa11}
+  .src-sebi{color:#a78bfa;border-color:#a78bfa33;background:#a78bfa11}
+  .src-mca{color:#34d399;border-color:#34d39933;background:#34d39911}
+  .src-gst{color:#f97316;border-color:#f9731633;background:#f9731611}
+  .src-labour{color:#fb7185;border-color:#fb718533;background:#fb718511}
+  .src-fssai{color:#22d3ee;border-color:#22d3ee33;background:#22d3ee11}
+  .imp-high{color:#ef4444;border-color:#ef444466;background:rgba(239,68,68,.1)}
+  .imp-medium{color:#f59e0b;border-color:#f59e0b66;background:rgba(245,158,11,.1)}
+  .imp-low{color:#22c55e;border-color:#22c55e66;background:rgba(34,197,94,.1)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-text">RegRadar</span>
+    <span class="logo-sub">INDIA COMPLIANCE INTELLIGENCE</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div id="provider-badge" style="display:flex;align-items:center;gap:5px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 10px">
+      <div style="width:6px;height:6px;border-radius:50%;background:#22c55e" id="provider-dot"></div>
+      <span style="font-size:10px;color:#22c55e" id="provider-text">Detecting...</span>
+    </div>
+    <div id="unread-badge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:600"></div>
+    <div style="display:flex;align-items:center;gap:5px">
+      <div class="status-dot" id="status-dot" style="background:#334155"></div>
+      <span id="status-text" style="font-size:10px;color:#334155">IDLE</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCAN BAR -->
+<div id="scanbar">
+  <span style="font-size:10px;color:#334155">SCAN:</span>
+  <button class="fb on" data-source="All" onclick="setSource(this)">All Sources</button>
+  <button class="fb" data-source="RBI" onclick="setSource(this)">RBI</button>
+  <button class="fb" data-source="SEBI" onclick="setSource(this)">SEBI</button>
+  <button class="fb" data-source="MCA" onclick="setSource(this)">MCA</button>
+  <button class="fb" data-source="GST" onclick="setSource(this)">GST</button>
+  <button class="fb" data-source="LABOUR" onclick="setSource(this)">Labour</button>
+  <button class="scan-btn" id="scan-btn" onclick="startScan()">⚡ LIVE SCAN</button>
+</div>
+
+<!-- STATUS BARS -->
+<div id="progress-bar" class="status-bar progress-bar" style="display:none"></div>
+<div id="error-bar" class="status-bar error-bar" style="display:none">
+  <span id="error-text"></span>
+  <button class="close-btn" onclick="document.getElementById('error-bar').style.display='none'">✕</button>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT -->
+  <div id="left">
+    <div id="filters" style="display:none">
+      <button class="fb on" data-sf="All" onclick="setSrcFilter(this)">All</button>
+      <button class="fb" data-sf="RBI" onclick="setSrcFilter(this)">RBI</button>
+      <button class="fb" data-sf="SEBI" onclick="setSrcFilter(this)">SEBI</button>
+      <button class="fb" data-sf="MCA" onclick="setSrcFilter(this)">MCA</button>
+      <button class="fb" data-sf="GST" onclick="setSrcFilter(this)">GST</button>
+      <button class="fb" data-sf="LABOUR" onclick="setSrcFilter(this)">LAB</button>
+      <button class="fb on" data-if="All" onclick="setImpFilter(this)">All Impact</button>
+      <button class="fb" data-if="High" onclick="setImpFilter(this)">High</button>
+      <button class="fb" data-if="Medium" onclick="setImpFilter(this)">Medium</button>
+      <button class="fb" data-if="Low" onclick="setImpFilter(this)">Low</button>
+    </div>
+
+    <div id="list">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 200px);gap:10px;padding:20px;text-align:center">
+        <div style="font-size:36px;opacity:.15">⚡</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;color:#334155">AI Agent Ready</div>
+        <div style="font-size:11px;color:#1e293b;line-height:1.7;max-width:220px">
+          Click LIVE SCAN — AI scrapes official government portals and analyzes real regulatory updates
+        </div>
+        <button class="scan-btn" style="margin-left:0;margin-top:6px" onclick="startScan()">⚡ Start Live Scan</button>
+        <div style="font-size:10px;color:#1a2234;margin-top:4px">RBI · SEBI · MCA · GST · Labour</div>
+      </div>
+    </div>
+
+    <div id="audit" style="display:none">
+      <div class="audit-label">AUDIT TRAIL</div>
+      <div id="audit-items"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="right">
+    <div id="empty-right">
+      <div style="font-size:44px;opacity:.12">⚡</div>
+      <div style="font-family:'Syne',sans-serif;font-size:17px;color:#263348;margin-top:10px">Select an alert</div>
+      <div style="font-size:12px;color:#1a2234;margin-top:5px">AI will run deep analysis with real-time web research</div>
+    </div>
+    <div id="detail-view" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div id="tabs">
+        <button class="tab on" onclick="switchTab('analysis')">AI ANALYSIS</button>
+        <button class="tab" onclick="switchTab('chat')">ASK AI AGENT</button>
+        <a id="official-link" href="#" target="_blank" style="display:none">🔗 Official Source ↗</a>
+      </div>
+      <div id="analysis-panel" style="display:block"></div>
+      <div id="chat-panel" style="display:none"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let regulations = [];
+let selectedReg = null;
+let srcFilter = "All";
+let impFilter = "All";
+let scanSource = "All";
+let chatHistory = [];
+let isScanning = false;
+let isChatLoading = false;
+let providerInfo = null;
+
+// ─── LOAD PROVIDER CONFIG ─────────────────────────────────────────────────────
+async function loadProviderConfig() {
+  try {
+    const res = await fetch("/api/config");
+    const data = await res.json();
+    providerInfo = data;
+    const badge = document.getElementById("provider-text");
+    const dot = document.getElementById("provider-dot");
+    const container = document.getElementById("provider-badge");
+
+    if (data.health?.status === "connected" || data.health?.status === "configured") {
+      badge.textContent = `${data.provider} · ${data.model}`;
+      dot.style.background = "#22c55e";
+      badge.style.color = "#22c55e";
+      container.style.borderColor = "rgba(34,197,94,.3)";
+      container.style.background = "rgba(34,197,94,.1)";
+    } else {
+      badge.textContent = `${data.provider} · ${data.health?.error || 'Not connected'}`;
+      dot.style.background = "#f59e0b";
+      badge.style.color = "#f59e0b";
+      container.style.borderColor = "rgba(245,158,11,.3)";
+      container.style.background = "rgba(245,158,11,.1)";
+    }
+  } catch (err) {
+    const badge = document.getElementById("provider-text");
+    const dot = document.getElementById("provider-dot");
+    badge.textContent = "Server offline";
+    dot.style.background = "#ef4444";
+    badge.style.color = "#ef4444";
+  }
+}
+loadProviderConfig();
+
+// ─── AUDIT LOG ────────────────────────────────────────────────────────────────
+function addAudit(action, detail) {
+  const time = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  const el = document.getElementById("audit-items");
+  const auditEl = document.getElementById("audit");
+  auditEl.style.display = "block";
+  const item = document.createElement("div");
+  item.className = "audit-item";
+  item.innerHTML = `<span class="audit-time">${time}</span><span class="audit-action">${action}</span>`;
+  el.insertBefore(item, el.firstChild);
+  if (el.children.length > 6) el.removeChild(el.lastChild);
+}
+
+// ─── STATUS ───────────────────────────────────────────────────────────────────
+function setStatus(state, text) {
+  const dot = document.getElementById("status-dot");
+  const txt = document.getElementById("status-text");
+  const colors = { idle: "#334155", scanning: "#f59e0b", live: "#22c55e", error: "#ef4444" };
+  dot.style.background = colors[state] || "#334155";
+  txt.style.color = colors[state] || "#334155";
+  txt.textContent = text;
+}
+
+function showProgress(msg) {
+  const bar = document.getElementById("progress-bar");
+  bar.textContent = msg;
+  bar.style.display = "flex";
+}
+
+function hideProgress() {
+  document.getElementById("progress-bar").style.display = "none";
+}
+
+function showError(msg) {
+  document.getElementById("error-text").textContent = msg;
+  document.getElementById("error-bar").style.display = "flex";
+}
+
+// ─── SOURCE SELECTOR ──────────────────────────────────────────────────────────
+function setSource(btn) {
+  document.querySelectorAll("#scanbar .fb").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  scanSource = btn.dataset.source;
+}
+
+function setSrcFilter(btn) {
+  document.querySelectorAll("[data-sf]").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  srcFilter = btn.dataset.sf;
+  renderList();
+}
+
+function setImpFilter(btn) {
+  document.querySelectorAll("[data-if]").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  impFilter = btn.dataset.if;
+  renderList();
+}
+
+// ─── SCAN ─────────────────────────────────────────────────────────────────────
+async function startScan() {
+  if (isScanning) return;
+  isScanning = true;
+  document.getElementById("error-bar").style.display = "none";
+  document.getElementById("scan-btn").disabled = true;
+  document.getElementById("scan-btn").textContent = "⟳ SCANNING...";
+  setStatus("scanning", "SCANNING");
+  showProgress("🌐 AI agent searching official government portals...");
+  addAudit(`Scan: ${scanSource}`, "AI agent + web search activated");
+
+  // Show skeletons
+  const list = document.getElementById("list");
+  list.innerHTML = [1,2,3,4,5].map(() => `
+    <div class="skel">
+      <div style="display:flex;gap:6px;margin-bottom:9px"><div class="shimmer" style="height:17px;width:38px"></div><div class="shimmer" style="height:17px;width:46px"></div></div>
+      <div class="shimmer" style="height:13px;width:92%;margin-bottom:5px"></div>
+      <div class="shimmer" style="height:13px;width:75%;margin-bottom:8px"></div>
+      <div class="shimmer" style="height:11px;width:60%"></div>
+    </div>`).join("");
+
+  try {
+    showProgress("⚙️ Processing regulatory intelligence with web search...");
+    const res = await fetch("/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: scanSource }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    regulations = data.regulations.map(r => ({ ...r, unread: true }));
+    setStatus("live", `${regulations.length} LIVE ALERTS`);
+    addAudit("Scan complete", `${regulations.length} real updates found`);
+    document.getElementById("filters").style.display = "flex";
+    updateUnreadBadge();
+    renderList();
+  } catch (err) {
+    showError("Scan failed — " + err.message);
+    setStatus("error", "ERROR");
+    addAudit("Scan failed", err.message);
+    list.innerHTML = `<div style="text-align:center;color:#334155;padding:40px 20px;font-size:12px">Scan failed. Check console and retry.</div>`;
+  }
+
+  hideProgress();
+  isScanning = false;
+  document.getElementById("scan-btn").disabled = false;
+  document.getElementById("scan-btn").textContent = "⚡ LIVE SCAN";
+}
+
+// ─── RENDER LIST ──────────────────────────────────────────────────────────────
+function renderList() {
+  const filtered = regulations.filter(r => {
+    const sf = srcFilter === "All" || r.source === srcFilter;
+    const imp = impFilter === "All" || r.impact === impFilter;
+    return sf && imp;
+  });
+
+  const list = document.getElementById("list");
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="text-align:center;color:#334155;padding:30px;font-size:12px">No results for current filters</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(r => {
+    const srcClass = "src-" + r.source.toLowerCase();
+    const impClass = "imp-" + (r.impact || "medium").toLowerCase();
+    return `
+    <div class="reg-card ${r.unread ? "unread" : ""} ${selectedReg?.id === r.id ? "active" : ""}" onclick="selectReg('${r.id}')">
+      ${r.unread ? '<div class="unread-dot"></div>' : ''}
+      <div class="badge-row" style="margin-bottom:0">
+        <span class="card-source badge ${srcClass}">${r.source}</span>
+        <span class="card-impact badge ${impClass}">⚠ ${r.impact}</span>
+        <span class="card-date">${r.date}</span>
+      </div>
+      <div class="card-title">${r.title}</div>
+      <div class="card-summary">${r.summary}</div>
+      ${r.url ? '<div class="card-url">🔗 official source</div>' : ''}
+    </div>`;
+  }).join("");
+}
+
+function updateUnreadBadge() {
+  const count = regulations.filter(r => r.unread).length;
+  const badge = document.getElementById("unread-badge");
+  if (count > 0) { badge.textContent = count + " NEW"; badge.style.display = "block"; }
+  else badge.style.display = "none";
+}
+
+// ─── SELECT REGULATION ────────────────────────────────────────────────────────
+async function selectReg(id) {
+  const reg = regulations.find(r => r.id === id);
+  if (!reg) return;
+
+  selectedReg = reg;
+  reg.unread = false;
+  updateUnreadBadge();
+  renderList();
+  chatHistory = [];
+
+  // Show detail view
+  document.getElementById("empty-right").style.display = "none";
+  document.getElementById("detail-view").style.display = "flex";
+  switchTab("analysis");
+
+  // Official link
+  const link = document.getElementById("official-link");
+  if (reg.url) { link.href = reg.url; link.style.display = "block"; }
+  else link.style.display = "none";
+
+  addAudit("Analyzed", reg.source + ": " + reg.title.slice(0, 40));
+  await runAnalysis(reg);
+}
+
+// ─── ANALYSIS ─────────────────────────────────────────────────────────────────
+async function runAnalysis(reg) {
+  const panel = document.getElementById("analysis-panel");
+
+  const srcClass = "src-" + reg.source.toLowerCase();
+  const impClass = "imp-" + (reg.impact || "medium").toLowerCase();
+
+  // Header
+  panel.innerHTML = `
+    <div class="reg-header">
+      <div class="badge-row">
+        <span class="badge ${srcClass}" style="font-weight:600">${reg.source}</span>
+        <span class="badge ${impClass}">⚠ ${reg.impact}</span>
+        ${reg.tag ? `<span style="font-size:10px;color:var(--text4);border:1px solid var(--border3);padding:3px 10px;border-radius:4px">${reg.tag}</span>` : ""}
+        <span style="font-size:10px;color:var(--text5);margin-left:auto">${reg.date}</span>
+      </div>
+      <div class="reg-title">${reg.title}</div>
+      <div class="sector-tags">
+        ${(reg.sector || []).map(s => `<span class="sector-tag">${s}</span>`).join("")}
+      </div>
+    </div>
+
+    ${(reg.what_changed || reg.deadline || reg.risk) ? `
+    <div class="quick-facts">
+      ${reg.what_changed ? `<div class="fact-card" style="border-color:#60a5fa22"><div class="fact-label" style="color:#60a5fa">CHANGE</div><div class="fact-value">${reg.what_changed}</div></div>` : ""}
+      ${reg.deadline ? `<div class="fact-card" style="border-color:#f59e0b22"><div class="fact-label" style="color:#f59e0b">DEADLINE</div><div class="fact-value">${reg.deadline}</div></div>` : ""}
+      ${reg.risk ? `<div class="fact-card" style="border-color:#ef444422"><div class="fact-label" style="color:#ef4444">RISK</div><div class="fact-value">${reg.risk}</div></div>` : ""}
+    </div>` : ""}
+
+    <div class="ai-box">
+      <div class="ai-header">
+        <div class="ai-badge">AI</div>
+        <span class="ai-title">DEEP INTELLIGENCE — Real-time web research</span>
+        <span class="spin">⟳</span>
+      </div>
+      <div id="analysis-content">
+        ${[88,62,78,50,70,55,82].map(w => `<div class="shimmer" style="height:12px;width:${w}%;margin-bottom:9px"></div>`).join("")}
+      </div>
+    </div>`;
+
+  try {
+    const res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ regulation: reg }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    // Remove spinner
+    const spin = panel.querySelector(".spin");
+    if (spin) spin.remove();
+
+    document.getElementById("analysis-content").innerHTML = formatAnalysis(data.analysis);
+  } catch (err) {
+    const spin = panel.querySelector(".spin");
+    if (spin) spin.remove();
+    document.getElementById("analysis-content").innerHTML = `<div style="color:#ef4444;font-size:13px">Analysis failed: ${err.message}</div>`;
+  }
+}
+
+function formatAnalysis(text) {
+  return text.split("\n").map(line => {
+    if (!line.trim()) return '<div style="height:6px"></div>';
+    if (line.startsWith("**") && line.endsWith("**")) {
+      return `<div class="analysis-section-head">${line.replace(/\*\*/g, "")}</div>`;
+    }
+    if (line.startsWith("•")) return `<div class="analysis-bullet">${line.slice(1).trim()}</div>`;
+    return `<div class="analysis-text">${line}</div>`;
+  }).join("");
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+  document.querySelectorAll(".tab")[tab === "analysis" ? 0 : 1].classList.add("on");
+
+  if (tab === "analysis") {
+    document.getElementById("analysis-panel").style.display = "block";
+    document.getElementById("chat-panel").style.display = "none";
+  } else {
+    document.getElementById("analysis-panel").style.display = "none";
+    document.getElementById("chat-panel").style.display = "flex";
+    renderChat();
+  }
+}
+
+// ─── CHAT ─────────────────────────────────────────────────────────────────────
+function renderChat() {
+  const panel = document.getElementById("chat-panel");
+  panel.innerHTML = `
+    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:14px 18px">
+      ${chatHistory.length === 0 ? `
+      <div class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <div style="color:var(--text4);margin-bottom:16px">Ask anything about this regulation</div>
+        <div class="chat-suggestions">
+          ${["Does this affect our NBFC?","What is the exact penalty?","Find related past circulars","What should CFO do first?"].map(q =>
+            `<button class="chat-suggestion" onclick="document.getElementById('chat-input').value='${q}'">${q}</button>`
+          ).join("")}
+        </div>
+      </div>` : chatHistory.map(m => `
+        <div class="chat-msg ${m.role === "user" ? "user" : "bot"}">
+          <div class="chat-bubble ${m.role === "user" ? "user" : "bot"}">
+            ${m.role === "assistant" ? '<div class="bot-label">AI AGENT</div>' : ""}
+            ${m.content}
+          </div>
+        </div>`).join("")}
+      <div id="chat-end"></div>
+    </div>
+    <div id="chat-input-row">
+      <input id="chat-input" placeholder="Ask about compliance, penalties, deadlines..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="send-btn" id="chat-send" onclick="sendChat()">→</button>
+    </div>`;
+}
+
+async function sendChat() {
+  const input = document.getElementById("chat-input");
+  const msg = input.value.trim();
+  if (!msg || isChatLoading) return;
+
+  isChatLoading = true;
+  chatHistory.push({ role: "user", content: msg });
+  input.value = "";
+  renderChat();
+
+  // Show typing
+  const messagesEl = document.getElementById("chat-messages");
+  const typingEl = document.createElement("div");
+  typingEl.className = "typing";
+  typingEl.innerHTML = [0,1,2].map((i) => `<div class="typing-dot" style="animation-delay:${i*.2}s"></div>`).join("");
+  messagesEl.insertBefore(typingEl, document.getElementById("chat-end"));
+  document.getElementById("chat-end").scrollIntoView({ behavior: "smooth" });
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: chatHistory,
+        regulation: selectedReg,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    chatHistory.push({ role: "assistant", content: data.reply });
+  } catch (err) {
+    chatHistory.push({ role: "assistant", content: "Error: " + err.message });
+  }
+
+  isChatLoading = false;
+  renderChat();
+  document.getElementById("chat-end")?.scrollIntoView({ behavior: "smooth" });
+}
+</script>
+</body>
+</html>
