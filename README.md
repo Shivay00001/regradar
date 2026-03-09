@@ -1,80 +1,81 @@
 # ⚡ RegRadar — India Regulatory Intelligence Platform
 
 Real-time AI-powered compliance monitoring for Indian businesses.
-Monitors RBI, SEBI, MCA, GST, Labour ministry — automatically.
+Monitors RBI, SEBI, MCA, GST, Labour ministry — automatically using free and local AI models.
 
 ---
 
-## Setup (5 minutes)
+## 🚀 Features
 
-### 1. Install Node.js
-Download from https://nodejs.org (v18 or higher)
+- **Live Scan & Monitoring**: Automatically scrapes official Indian government websites for regulatory updates.
+- **AI-Powered Analysis**: Deep analysis of circulars and notifications for actionable compliance steps.
+- **Free/Local AI Integration**: Supports 100% free and private AI models via **Ollama**, as well as cloud providers like **Groq** and **Google Gemini**.
+- **Interactive Chat**: Ask the AI agent specific compliance questions based on the latest regulations.
 
-### 2. Get Anthropic API Key
-Go to https://console.anthropic.com → Create API Key
+---
 
-### 3. Setup Project
+## ⚙️ Setup Instructions
+
+### 1. Prerequisites
+
+- Python 3.10+
+- (Optional) [Ollama](https://ollama.com/) for local, private AI models.
+
+### 2. Installation
+
+Clone the repository and install dependencies:
 
 ```bash
-# Enter project folder
+git clone https://github.com/Shivay00001/regradar.git
 cd regradar
 
-# Install dependencies
-npm install
-
-# Create .env file
-cp .env.example .env
-
-# Edit .env and paste your API key
-# ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxx
+# Install required Python packages
+pip install -r requirements.txt
 ```
 
-### 4. Run
+### 3. Configuration
 
 ```bash
-npm start
+cp .env.example .env
 ```
 
-Open browser → http://localhost:3000
+Edit the `.env` file to select your preferred AI provider:
+
+- **Ollama**: (Default) Runs locally. Make sure Ollama is installed and run `ollama pull llama3.2` (or your preferred model).
+- **Groq**: Fast cloud inference. Add your free API key from console.groq.com.
+- **Gemini**: Add your free API key from aistudio.google.com.
+
+### 4. Running the Server
+
+```bash
+python app.py
+```
+
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## How It Works
+## 🏗️ Architecture
 
-1. Click **LIVE SCAN** → Claude AI agent searches official government websites
-2. Real regulatory updates appear in the list
-3. Click any alert → AI runs deep analysis with additional web research  
-4. Use **ASK AI AGENT** tab to ask compliance questions
-
----
-
-## Architecture
-
-```
-Browser (public/index.html)
-    ↓ HTTP POST
-Express Server (server.js)
-    ↓ Anthropic API + Web Search Tool
-Claude AI Agent → searches rbi.org.in, sebi.gov.in, mca.gov.in, cbic.gov.in, labour.gov.in
-    ↓
-Real Regulatory Data → Back to Browser
-```
+- **Backend**: Python with **FastAPI**.
+- **Scraping**: `BeautifulSoup4` for real-time extraction from government portals.
+- **AI Processing**: Unified interface in `ai_providers.py` for Ollama, Groq, and Gemini.
+- **Frontend**: Lightweight HTML/Vanilla JS interface served by the backend.
 
 ---
 
-## API Routes
+## 📡 API Routes
 
 | Route | Method | What it does |
 |-------|--------|--------------|
-| /api/scan | POST | AI scans government sites, returns real regulations |
-| /api/analyze | POST | Deep analysis of a specific regulation |
-| /api/chat | POST | Chat with AI about any regulation |
-| /api/health | GET | Check server status |
+| `/api/scan` | POST | AI scans government sites, returns real regulations |
+| `/api/analyze` | POST | Deep analysis of a specific regulation |
+| `/api/chat` | POST | Chat with AI about any regulation |
+| `/api/config` | GET | Check active provider configuration |
+| `/api/health` | GET | Check server status |
 
 ---
 
-## Monetization
+## 💼 Use Cases
 
-- ₹8L–₹25L/year per enterprise client
-- Target: CFO, Legal Head, Compliance Officer
-- Demo: Show them a live scan of their sector → instant close
+Targeting CFOs, Legal Heads, and Compliance Officers to reduce regulatory risks and automate compliance tracking across banking, NBFC, capital markets, and corporate sectors.
