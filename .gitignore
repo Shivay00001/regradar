@@ -21,3 +21,4 @@ env/
 
 # Temporary files
 test_backend_output.txt
+node_modules/
