@@ -1,5 +1,7 @@
 # ⚡ RegRadar — India Regulatory Intelligence Platform
 
+Built by [VisionQuantech](https://visionquantech.com) — AI agents, apps & tools for small businesses.
+
 Real-time AI-powered compliance monitoring for Indian businesses.
 Monitors RBI, SEBI, MCA, GST, Labour ministry — automatically using free and local AI models.
 
